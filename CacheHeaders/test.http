@@ -1,0 +1,33 @@
+## Call to get Response with ETag
+GET https://localhost:7230/
+Content-Type: application/json
+
+> {% client.global.set("etag", response.headers.valueOf("ETag")); %}
+
+### Call With ETag to see if modified
+GET https://localhost:7230/
+Content-Type: application/json
+ETag: {{etag}}
+If-None-Match: {{etag}}
+
+> {%
+client.test("Retrieved from cache successfully", function() {
+  client.assert(response.status === 304, "Response status is not 304");
+});
+%}
+
+### Call To Modify Resource
+PUT https://localhost:7230/
+Content-Type: application/json
+
+### Call to get Response with outdated ETag
+GET https://localhost:7230/
+Content-Type: application/json
+ETag: {{etag}}
+If-None-Match: {{etag}}
+
+> {%
+client.test("Response is 200 OK (no caching)", function() {
+  client.assert(response.status === 200, "Response status is not 200");
+});
+%}
